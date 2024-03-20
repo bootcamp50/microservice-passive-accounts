@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: microservice-passive-accounts
+  cloud:
+    config:
+      enabled: true
+      label: main
+      uri: http://bank-config.f5b0gag7cydfdzg8.eastus.azurecontainer.io:8888/
