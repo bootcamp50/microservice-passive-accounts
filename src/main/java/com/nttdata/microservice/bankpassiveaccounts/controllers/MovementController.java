@@ -18,20 +18,20 @@ import com.nttdata.microservice.bankpassiveaccounts.services.IMovementService;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@RestController
-@RequestMapping(value = "movement")
+//@RestController
+//@RequestMapping(value = "movement")
 public class MovementController {
 	
 	private static Logger logger = Logger.getLogger(MovementController.class);
 	
-	private final KafkaStringProducer kafkaStringProducer;
+	//private final KafkaStringProducer kafkaStringProducer;
 
-    @Autowired
+    /*@Autowired
     MovementController(KafkaStringProducer kafkaStringProducer) {
         this.kafkaStringProducer = kafkaStringProducer;
-    }
+    }*/
 	
-	@Autowired
+	/*@Autowired
 	private IMovementService service;
 	
 	@GetMapping("/getByAccountNumber/{accountNumber}")
@@ -69,7 +69,7 @@ public class MovementController {
 	public Mono<MovementsCollection> saveWithdrawalWithDebitCard(@RequestBody MovementsCollection collection) throws Exception{
 		logger.info("save withdrawal with debit card");
 		String message = collection.getPersonCode() +":"+"save withdrawal with debit card";
-		this.kafkaStringProducer.sendMessage(message);
+		//this.kafkaStringProducer.sendMessage(message);
 		return service.saveWithdrawalWithDebitCard(collection);
 	}
 	
@@ -77,12 +77,12 @@ public class MovementController {
 	public Mono<MovementsCollection> saveWithdrawalWithWallet(@RequestBody MovementsCollection collection) throws Exception{
 		logger.info("save withdrawal with wallet");
 		return service.saveWithdrawalWithWallet(collection);
-	}
+	}*/
 	
-	@PostMapping(value = "/publish/{message}")
+	/*@PostMapping(value = "/publish/{message}")
     public void sendMessageToKafkaTopic(@PathVariable("message") String message) {
         this.kafkaStringProducer.sendMessage(message);
-    }
+    }*/
 	
 	
 	

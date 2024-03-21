@@ -1,6 +1,8 @@
 package com.nttdata.microservice.bankpassiveaccounts.collections.enums;
 
-public enum PersonTypeEnum {
+public enum CustomerTypeEnum {
 	ENTERPRISE,
-	PERSONAL
+	ENTERPRISE_PYME,
+	PERSONAL,
+	PERSONAL_VIP
 }

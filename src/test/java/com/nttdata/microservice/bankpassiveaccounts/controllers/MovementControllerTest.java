@@ -34,7 +34,7 @@ class MovementControllerTest {
 	void setUp() throws Exception {
 	}
 
-	@Test
+	/*@Test
 	@DisplayName("Test get movements of an account")
 	void getByAccountNumber(){
 		
@@ -165,7 +165,7 @@ class MovementControllerTest {
 		.body(Mono.just(movementMono),PassiveAccountCollection.class)
 		.exchange()
 		.expectStatus().isOk();
-	}
+	}*/
 	
 
 }

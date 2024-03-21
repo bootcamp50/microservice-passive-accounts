@@ -5,4 +5,4 @@ spring:
     config:
       enabled: true
       label: main
-      uri: http://bank-config.f5b0gag7cydfdzg8.eastus.azurecontainer.io:8888/
+      uri: http://bank-config:8888

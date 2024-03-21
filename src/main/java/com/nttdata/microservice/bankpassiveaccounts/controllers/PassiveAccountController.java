@@ -1,122 +1,101 @@
 package com.nttdata.microservice.bankpassiveaccounts.controllers;
 
-import org.apache.log4j.Logger;
+import java.util.Date;
+import java.util.NoSuchElementException;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import com.nttdata.microservice.bankpassiveaccounts.collections.Movement;
 import com.nttdata.microservice.bankpassiveaccounts.collections.PassiveAccountCollection;
-import com.nttdata.microservice.bankpassiveaccounts.dto.CurrentAccountEnterpriseDto;
-import com.nttdata.microservice.bankpassiveaccounts.dto.CurrentAccountPersonalDto;
-import com.nttdata.microservice.bankpassiveaccounts.dto.FixTermPersonalDto;
-import com.nttdata.microservice.bankpassiveaccounts.dto.SavingAccountPersonalDto;
+import com.nttdata.microservice.bankpassiveaccounts.dto.MovementCommissionDto;
+import com.nttdata.microservice.bankpassiveaccounts.dto.PassiveAccountBalanceDto;
+import com.nttdata.microservice.bankpassiveaccounts.dto.PassiveAccountCreateDto;
+import com.nttdata.microservice.bankpassiveaccounts.dto.PassiveAccountDto;
+import com.nttdata.microservice.bankpassiveaccounts.dto.PassiveAccountMovementDto;
+import com.nttdata.microservice.bankpassiveaccounts.exceptions.CustomerInactiveException;
+import com.nttdata.microservice.bankpassiveaccounts.exceptions.PassiveAccountException;
 import com.nttdata.microservice.bankpassiveaccounts.services.IPassiveAccountService;
 
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
+@Slf4j
 @RequestMapping(value = "passive-accounts")
 public class PassiveAccountController {
 	
-	private static Logger logger = Logger.getLogger(PassiveAccountController.class);
+	//private static Logger logger = Logger.getLogger(PassiveAccountController.class);
 
 	@Autowired
 	private IPassiveAccountService pasiveAccountService;
 	
-	@PostMapping(value = "/saveCurrentPersonalAccount")
-	public Mono<PassiveAccountCollection> saveCurrentPersonalAccount(@RequestBody CurrentAccountPersonalDto dto) throws Exception{
-		logger.info("save passive account");
-		PassiveAccountCollection passiveAccountCollection = new PassiveAccountCollection();
-		passiveAccountCollection.setAccountNumber(dto.getAccountNumber());
-		passiveAccountCollection.setAccountAmount(dto.getAccountAmount());
-		passiveAccountCollection.setAccountBalance(dto.getAccountBalance());
-		passiveAccountCollection.setPersonCode(dto.getPersonCode());
-		passiveAccountCollection.setMaintenanceCommission(dto.getMaintenanceCommission());
-		passiveAccountCollection.setTransactionCommission(dto.getTransactionCommission());
-		passiveAccountCollection.setMaximumTransactionsWithoutCommission(dto.getMaximumTransactionsWithoutCommission());
-		return pasiveAccountService.saveCurrentPersonalAccount(passiveAccountCollection);
-	}
+	@GetMapping("/accounts")
+    public Flux<PassiveAccountDto> findAllAccounts(){
+        log.info("Get All pasive accounts");
+        return pasiveAccountService.findAll();
+    }
 	
-	@PostMapping(value = "/saveSavingPersonalAccount")
-	public Mono<PassiveAccountCollection> saveSavingPersonalAccount(@RequestBody SavingAccountPersonalDto dto) throws Exception{
-		logger.info("save passive account");
-		PassiveAccountCollection passiveAccountCollection = new PassiveAccountCollection();
-		passiveAccountCollection.setAccountNumber(dto.getAccountNumber());
-		passiveAccountCollection.setAccountAmount(dto.getAccountAmount());
-		passiveAccountCollection.setAccountBalance(dto.getAccountBalance());
-		passiveAccountCollection.setPersonCode(dto.getPersonCode());
-		passiveAccountCollection.setMaximumTransactions(dto.getMaximumTransactions());
-		passiveAccountCollection.setTransactionCommission(dto.getTransactionCommission());
-		return pasiveAccountService.saveSavingPersonalAccount(passiveAccountCollection);
-	}
+	@GetMapping("findAccountsByCustomerId/{id}")
+    public Flux<PassiveAccountCollection> findAccountsByCustomerId(@PathVariable("id") String id) {
+        log.info("Get operation in /customers/{}/accounts", id);
+        return pasiveAccountService.findByCustomerId(id);
+    }
 	
-	@PostMapping(value = "/saveFixTermPersonalAccount")
-	public Mono<PassiveAccountCollection> saveFixTermPersonalAccount(@RequestBody FixTermPersonalDto dto) throws Exception{
-		logger.info("save passive account");
-		PassiveAccountCollection passiveAccountCollection = new PassiveAccountCollection();
-		passiveAccountCollection.setAccountNumber(dto.getAccountNumber());
-		passiveAccountCollection.setAccountAmount(dto.getAccountAmount());
-		passiveAccountCollection.setAccountBalance(dto.getAccountBalance());
-		passiveAccountCollection.setMaximumTransactions(dto.getMaximumTransactions());
-		passiveAccountCollection.setPersonCode(dto.getPersonCode());
-		passiveAccountCollection.setDayMovementAvailable(dto.getDayMovementAvailable());
-		passiveAccountCollection.setTransactionCommission(dto.getTransactionCommission());
-		passiveAccountCollection.setMaximumTransactionsWithoutCommission(dto.getMaximumTransactionsWithoutCommission());
-		
-		return pasiveAccountService.saveFixTermPersonalAccount(passiveAccountCollection);
-	}
+	@PostMapping("/saveAccount")
+    public Mono<ResponseEntity<PassiveAccountCollection>> createAccount(@RequestBody PassiveAccountCreateDto accountDTO) {
+        log.info("Post operation in /accounts");
+        return pasiveAccountService.create(accountDTO)
+                .flatMap(createdAccount -> Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(createdAccount)))
+                .onErrorResume(CustomerInactiveException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.LOCKED).build()))
+                .onErrorResume(PassiveAccountException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()))
+                .onErrorResume(IllegalArgumentException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
+                .onErrorResume(NoSuchElementException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()))
+                .onErrorResume(NullPointerException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build()))
+                //.onErrorResume(CircuitBreakerException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).build()))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(null)));
+    }
 	
-	@PostMapping(value = "/saveCurrentEnterpriseAccount")
-	public Mono<PassiveAccountCollection> saveCurrentEnterpriseAccount(@RequestBody CurrentAccountEnterpriseDto dto) throws Exception{
-		logger.info("save passive account");
-		PassiveAccountCollection passiveAccountCollection = new PassiveAccountCollection();
-		passiveAccountCollection.setAccountNumber(dto.getAccountNumber());
-		passiveAccountCollection.setPersonCode(dto.getPersonCode());
-		passiveAccountCollection.setAccountAmount(dto.getAccountAmount());
-		passiveAccountCollection.setAccountBalance(dto.getAccountBalance());
-		passiveAccountCollection.setTransactionCommission(dto.getTransactionCommission());
-		passiveAccountCollection.setMaximumTransactionsWithoutCommission(dto.getMaximumTransactionsWithoutCommission());
-		
-		return pasiveAccountService.saveCurrentEnterpriseAccount(passiveAccountCollection);
-	}
+	@PostMapping("/saveMovement")
+    public Mono<ResponseEntity<PassiveAccountCollection>> saveMovement(@RequestBody PassiveAccountMovementDto accountDto) {
+        log.info("Post operation in /accounts/operation");
+        return pasiveAccountService.doMovement(accountDto)
+                .flatMap(createdAccount -> Mono.just(ResponseEntity.status(HttpStatus.CREATED).body(createdAccount)))
+                .onErrorResume(CustomerInactiveException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.LOCKED).build()))
+                .onErrorResume(PassiveAccountException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()))
+                .onErrorResume(IllegalArgumentException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()))
+                .onErrorResume(NoSuchElementException.class, error -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.CONFLICT).body(null)));
+    }
 	
-	@PostMapping(value = "/saveVipPersonalAccount/{accountNumber}/{minimumAverageAmount}")
-	public Mono<PassiveAccountCollection> saveVipPersonalAccount(@PathVariable("accountNumber") String accountNumber, @PathVariable("minimumAverageAmount") Double minimumAverageAccount) throws Exception{
-		logger.info("save passive account");
-		return pasiveAccountService.saveVipPersonalAccount(accountNumber, minimumAverageAccount);
-	}
-	
-	@PostMapping(value = "/savePymeEnterpriseAccount/{accountNumber}")
-	public Mono<PassiveAccountCollection> savePymeEnterpriseAccount(@PathVariable("accountNumber") String accountNumber) throws Exception{
-		logger.info("save passive account");
-		return pasiveAccountService.savePymeEnterpriseAccount(accountNumber);
-	}
-	
-	
-	// EXTERNAL VALIDATORS
-	@GetMapping("/getAccountBalance/{accountNumber}")
-	public Mono<Double> getAccountBalance(@PathVariable("accountNumber") String accountNumber)
-			throws Exception {
-		logger.info("get account balance by account number");
-		return pasiveAccountService.getAccountBalance(accountNumber);
-	}
-	
-	@GetMapping("/checkIfExist/{accountNumber}")
-	public Mono<Boolean> checkIfExist(@PathVariable("accountNumber") String accountNumber)
-			throws Exception {
-		logger.info("check if account number exist");
-		return pasiveAccountService.checkIfExist(accountNumber);
-	}
-	
-	@PostMapping(value = "/updateCreditDebitNumber/{accountNumber}/{debitCardNumber}")
-	public Mono<PassiveAccountCollection> updateCreditDebitNumber(@PathVariable("accountNumber") String accountNumber
-			, @PathVariable("debitCardNumber") String debitCardNumber) throws Exception{
-		logger.info("associate passive account with debit card");
-		return pasiveAccountService.updateDebitCardNumber(accountNumber, debitCardNumber);
-	}
-	
+	@GetMapping("/findMovementsByAccountId/{id}")
+    public Flux<Movement> findMovementsByAccountId(@PathVariable("id") String id) {
+        log.info("findMovementsByAccountId/{}", id);
+        return pasiveAccountService.findOperationsByAccountId(id);
+    }
+
+    @GetMapping("/findCommissionsBetweenDatesByAccountId/{id}")
+    public Flux<MovementCommissionDto> findCommissionsBetweenDatesByAccountId(@RequestParam(value = "date-from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateFrom,
+                                                                                  @RequestParam(value = "date-to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date dateTo,
+                                                                                  @PathVariable("id") String id) {
+        log.info("findCommissionsBetweenDatesByAccountId/{}", id);
+        return pasiveAccountService.findCommissionsBetweenDatesByAccountId(dateFrom, dateTo, id);
+    }
+
+    @GetMapping("findBalancesByCustomerId/{id}")
+    public Flux<PassiveAccountBalanceDto> findBalancesByCustomerId(@PathVariable("id") String id) {
+        log.info("findBalancesByCustomerId/{}", id);
+        return pasiveAccountService.findBalancesByCustomerId(id);
+    }
+    
 }

@@ -10,13 +10,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
+/*@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(value = "movements")
+@Document(value = "movements")*/
 public class MovementsCollection {
 	
-	@Id
+	/*@Id
 	private ObjectId id;
 	
 	private String personCode;
@@ -33,6 +33,6 @@ public class MovementsCollection {
 	private String state;
 	private Date createdAt;
 	private Date updatedAt;
-	private Date deletedAt;
+	private Date deletedAt;*/
 
 }

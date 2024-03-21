@@ -1,0 +1,8 @@
+com\nttdata\microservice\bankpassiveaccounts\controllers\MovementControllerTest.class
+com\nttdata\microservice\bankpassiveaccounts\services\impl\DebitCardServiceImplTest.class
+com\nttdata\microservice\bankpassiveaccounts\services\impl\PassiveAccountServiceImplTest.class
+com\nttdata\microservice\bankpassiveaccounts\controllers\DebitCardControllerTest.class
+com\nttdata\microservice\bankpassiveaccounts\controllers\PassiveAccountControllerTest.class
+com\nttdata\microservice\bankpassiveaccounts\ApplicationTests.class
+com\nttdata\microservice\bankpassiveaccounts\services\impl\MovementServiceImplTest.class
+com\nttdata\microservice\bankpassiveaccounts\facade\impl\PassiveAccountFacadeImplTest.class

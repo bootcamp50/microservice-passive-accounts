@@ -7,7 +7,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 
-@Component
+//@Component
 public class KafkaStringProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaStringProducer.class);

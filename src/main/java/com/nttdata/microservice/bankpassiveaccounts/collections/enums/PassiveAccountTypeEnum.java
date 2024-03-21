@@ -2,8 +2,9 @@ package com.nttdata.microservice.bankpassiveaccounts.collections.enums;
 
 public enum PassiveAccountTypeEnum {
 	CURRENT_ACCOUNT,
+	CURRENT_ACCOUNT_PYME,
 	SAVING_ACCOUNT,
-	FIX_TERM_ACCOUNT,
-	VIP,
-	PYME,
+	SAVING_ACCOUNT_VIP,
+	FIX_TERM_ACCOUNT
+	
 }

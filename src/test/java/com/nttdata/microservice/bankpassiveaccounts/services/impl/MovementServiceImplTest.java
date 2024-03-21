@@ -42,7 +42,7 @@ class MovementServiceImplTest {
 	}
 
 		
-	@Test
+	/*@Test
 	@DisplayName("Test save a deposit")
 	void saveDepositTest() {
 		
@@ -286,31 +286,8 @@ class MovementServiceImplTest {
 	@DisplayName("Test check if have minimum average amount is allowed")
 	void checkIfHaveAverageAmountTest() {
 		
-		/*String accountNumber = "123456";
-		Double minimumAverageAmount = 200.0;
-		
-		LocalDate localDate = LocalDate.now(); 
-		Date fechaMesActual = localDate.toDate();
-		Date fechaMesAnterior = localDate.minusMonths(1).toDate();
-		
-		MovementsCollection movement = new MovementsCollection();
-		movement.setAccountNumberDestination("123456");
-		movement.setCreatedAt(fechaMesActual);
-		movement.setAmount(1000.0);
-		
-		MovementsCollection movement2 = new MovementsCollection();
-		movement2.setAccountNumberSource("123456");
-		movement2.setCreatedAt(fechaMesAnterior);
-		movement2.setAmount(200.0);
-		
-		when(repository.findAll()).thenReturn(Flux.just(movement,movement2));
-		
-		Mono<Boolean> expected = service.checkIfHaveAverageAmount(accountNumber, minimumAverageAmount);
-		
-		assertNotNull(expected);
-		assertEquals(true, expected.block());*/
 		
 		
-	}
+	}*/
 	
 }
